@@ -1,0 +1,235 @@
+<script src="https://discount-ladder--development.gadget.app/api/client/web.min.js" defer="defer"></script>
+
+<script src="{{ 'tiered_discount.js' | asset_url }}" defer="defer"></script>
+
+{% liquid
+  for currency in shop.enabled_currencies
+    if currency.iso_code == shop.currency
+      assign symbol = currency.symbol
+      break
+    endif
+  endfor
+%}
+<style>
+    .tieredDiscount{
+      background-color:{{ block.settings.background_color }};
+      padding:20px;
+      border-radius: 10px;
+    }
+
+    .tierItem{
+      margin-bottom:12px;
+      display:flex;
+      flex-direction:column;
+      align-items: start;
+    }
+
+    .tierItem span{
+      color: {{ block.settings.text_color }};
+    }
+
+    .tierPrice, .tiersTotal > div{
+      font-size:24px;
+      font-weight:700;
+      color: {{ block.settings.text_color }};
+    }
+
+    .tierSubtitle{
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+    .tierSubtitle strong{
+      color: {{ block.settings.highlight_color }};
+    }
+
+    .tiersTotal{
+      display:flex;
+      flex-direction:row;
+      align-items: center;
+      justify-content: space-between;
+      margin: 25px 0;
+    }
+
+    .tiersQuantitySelector{
+      display:flex;
+      flex-direction:row;
+      justify-content:stretch;
+      align-items:center;
+      position:relative;
+    }
+
+    .tiersQuantitySelector > button{
+      padding:0 28px;
+      position: absolute;
+      padding: 0 1.75rem;
+      font-size:16px;
+      background: none;
+      height: 100%;
+      cursor: pointer;
+      border:none;
+    }
+
+    .tiersQuantitySelector > button > svg{
+      width: 1rem;
+      height: 1rem;
+    }
+
+    [data-quantity-minus]{
+      left:0;
+    }
+
+    [data-quantity-plus]{
+      right:0;
+    }
+
+    .tierQuantityInput{
+      width:100%;
+    }
+
+    .tierQuantityInput input{
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      display: inline-block;
+      border-radius: 28.5px;
+      outline: none;
+      font-size:17px;
+      background: transparent;
+      color: #222;
+      border: 2px solid #ff834d;
+      padding: .875rem 1.625rem;
+      width: 100%;
+      text-align: center;
+      border: none;
+      background: #fff;
+    }
+
+    /* Chrome, Safari, Edge, Opera */
+    .tierQuantityInput input::-webkit-outer-spin-button,
+    .tierQuantityInput input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  .tierQuantityInput input[type=number] {
+    -moz-appearance: textfield;
+  }
+</style>
+
+<div class="tieredDiscount" data-shopify-product="{{ block.settings.product.id }}">
+  <div class="tiersContainer">
+    <div class="tierItem">
+      <span class="tierPrice"
+        ><span>{{ symbol }}</span>0.68</span
+      >
+      <span class="tierSubtitle">for 1 to 9 items</span>
+    </div>
+    <div class="tierItem">
+      <span class="tierPrice"
+        ><span>{{ symbol }}</span>0.68</span
+      >
+      <span class="tierSubtitle">for 1 to 9 items</span>
+    </div>
+    <div class="tierItem">
+      <span class="tierPrice"
+        ><span>{{ symbol }}</span>0.68</span
+      >
+      <span class="tierSubtitle">for 1 to 9 items</span>
+    </div>
+  </div>
+
+  <div class="tiersTotal">
+    <div>Total</div>
+    <span class="tierPrice"
+      ><span>{{ symbol }}</span>0.68</span
+    >
+  </div>
+
+  <div class="tiersAddToCart">
+    <div class="tiersQuantitySelector">
+      <button
+        type="button"
+        disabled="disabled"
+        data-quantity-minus
+      >
+        <svg
+          class="o-quantity-selector__icon cust-svg-369086"
+          viewBox="0 0 11.16 1.8"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="m10.25 1.8h-9.35a.9.9 0 0 1 0-1.8h9.35a.9.9 0 0 1 .91.9.9.9 0 0 1 -.91.9z"></path>
+        </svg>
+      </button>
+      <div class="tierQuantityInput">
+        <input
+          type="number"
+          value="1"
+          min="1"
+          data-quantity-selector-field=""
+        >
+      </div>
+      <button type="button" data-quantity-plus>
+        <svg
+          class="o-quantity-selector__icon cust-svg-102053"
+          height="22"
+          viewBox="0 0 22 22"
+          width="22"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g fill="#000"><path d="m11 .2c-.6 0-1 .4-1 1v9h-9c-.6 0-1 .4-1 1s.4 1 1 1h9v9c0 .6.4 1 1 1s1-.4 1-1v-9h9c.6 0 1-.4 1-1s-.4-1-1-1h-9v-9c0-.6-.4-1-1-1z" fill="#000"></path></g>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+{% schema %}
+{
+  "name": "Tiered Discounts",
+  "target": "section",
+  "settings": [
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#515f75"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#fff"
+    },
+    {
+      "type": "color",
+      "id": "highlight_color",
+      "label": "Highlight Color",
+      "default": "#ff834d"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product",
+      "autofill": true
+    },
+    {
+      "type": "text",
+      "id": "footer_text",
+      "label": "Footer Text",
+      "default": "Prices are GST Incl."
+    },
+    {
+      "type": "url",
+      "id": "custom_link_url",
+      "label": "Custom Link URL"
+    },
+    {
+      "type": "text",
+      "id": "custom_link_text",
+      "label": "Custom Link Text",
+      "default": "Volume pricing available on request"
+    }
+  ]
+}
+{% endschema %}
