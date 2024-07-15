@@ -64,7 +64,6 @@ export default function () {
   const handleChangeTitle = useCallback((newValue) => setTitle(newValue), []);
   const [modifyStatus, setModifyStatus] = useState(modifyMode);
 
-  console.log({ modifyStatus, existingID });
   const [tiers, setTiers] = useState(
     duplicateState && duplicateState?.tiers
       ? duplicateState.tiers.edges.map((t) => {
@@ -109,7 +108,17 @@ export default function () {
     setSelectedCollections([]);
   }, []);
 
-  const gadgetMutateDiscount = async (status) => {
+  const gadgetMutateDiscount = async (
+    title,
+    selectedResource,
+    selectedProducts,
+    selectedCollections,
+    tiers,
+    status,
+    data,
+    modifyMode,
+    existingID
+  ) => {
     const newTieredDiscount = new TieredDiscount(
       title,
       selectedResource,
@@ -158,6 +167,7 @@ export default function () {
           },
         }
       );
+
       setTiers(
         tieredUpdateResult.tiers.edges.map((t) => {
           let node = t.node;
@@ -209,19 +219,55 @@ export default function () {
     }
   };
 
-  const handleDraftDiscount = async () => {
-    await gadgetMutateDiscount("DRAFT");
+  const handleDraftDiscount = useCallback(async () => {
+    await gadgetMutateDiscount(
+      title,
+      selectedResource,
+      selectedProducts,
+      selectedCollections,
+      tiers,
+      "DRAFT",
+      data,
+      modifyMode,
+      existingID
+    );
     shopify.toast.show("Tiered Discount Saved & Drafted");
-  };
+  }, [
+    tiers,
+    title,
+    selectedResource,
+    selectedProducts,
+    selectedCollections,
+    data,
+    modifyMode,
+    existingID,
+  ]);
 
-  const handlePublishDiscount = async () => {
-    await gadgetMutateDiscount("ACTIVE");
+  const handlePublishDiscount = useCallback(async () => {
+    await gadgetMutateDiscount(
+      title,
+      selectedResource,
+      selectedProducts,
+      selectedCollections,
+      tiers,
+      "ACTIVE",
+      data,
+      modifyMode,
+      existingID
+    );
     shopify.toast.show("Tiered Discount Saved & Published");
-  };
+  }, [
+    tiers,
+    title,
+    selectedResource,
+    selectedProducts,
+    selectedCollections,
+    data,
+    modifyMode,
+    existingID,
+  ]);
 
   const navigate = useNavigate();
-
-  console.log(tiers);
 
   return (
     <Page

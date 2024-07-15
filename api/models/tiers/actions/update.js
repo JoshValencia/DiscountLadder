@@ -4,10 +4,9 @@ import { applyParams, save, ActionOptions, UpdateTiersActionContext } from "gadg
  * @param { UpdateTiersActionContext } context
  */
 export async function run({ params, record, logger, api, connections }) {
-  console.log(params)
-  console.log(record)
-  // applyParams(params, record);
-  // await save(record);
+
+  applyParams(params, record);
+  await save(record);
 };
 
 /**

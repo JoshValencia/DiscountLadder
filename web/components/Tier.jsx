@@ -151,6 +151,7 @@ export default function Tier({
       },
     ]);
   }, [tiers]);
+
   return (
     <BlockStack gap="300">
       <InlineStack align="space-between">
