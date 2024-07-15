@@ -13,21 +13,32 @@ const priceFormatter = (price, symbol = true, number = false) => {
   return `${symbol == true ? "$" : ""}${parseFloat(arrange).toLocaleString()}`;
 };
 
-const discountedBulkPrice = (discountAmount, price, quantity, type) => {
+const discountedBulkPrice = (
+  discountAmount,
+  price,
+  quantity,
+  type,
+  multiQuantity = 1,
+  pureFloat = false
+) => {
   let formattedPrice = priceFormatter(parseInt(price), false, true);
 
   if (type === "percent") {
     let decimalDiscount = discountAmount / 100;
     let discountedPrice =
-      formattedPrice * quantity - formattedPrice * quantity * decimalDiscount;
-    return discountedPrice.toLocaleString();
+      formattedPrice * multiQuantity -
+      formattedPrice * multiQuantity * decimalDiscount;
+    return pureFloat
+      ? parseFloat(discountedPrice.toFixed(2))
+      : parseFloat(discountedPrice.toFixed(2)).toLocaleString();
   }
   if (type === "fixed") {
-    let discountedPrice = formattedPrice * quantity - discountAmount;
-    return discountedPrice.toLocaleString();
+    let discountedPrice = formattedPrice * multiQuantity - discountAmount;
+    return pureFloat ? discountedPrice : discountedPrice.toLocaleString();
   }
   if (type === "default") {
-    return (formattedPrice * quantity).toLocaleString();
+    let discountedPrice = formattedPrice * multiQuantity;
+    return pureFloat ? discountedPrice : discountedPrice.toLocaleString();
   }
 };
 
@@ -57,6 +68,9 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   const currentProductID = document.querySelector(
     ".tieredDiscount[data-shopify-product]"
   ).dataset.shopifyProduct;
+  const currentVariantID = document.querySelector(
+    ".tieredDiscount[data-shopify-variant]"
+  ).dataset.shopifyVariant;
   const currentProductCollections = JSON.parse(
     document.querySelector(`#tieredProductCollections--${currentProductID}`)
       .innerHTML
@@ -159,10 +173,11 @@ document.addEventListener("DOMContentLoaded", async (event) => {
       let currentValue = parseInt(
         document.querySelector("[data-quantity-selector-field]").value
       );
-      if (currentValue < 2) {
+      if (currentValue == 1) {
         document
           .querySelector(".tiersQuantitySelector > button[data-quantity-minus]")
           .setAttribute("disabled", "");
+        return;
       }
 
       let tierDiscount = window.tiers.find(
@@ -173,7 +188,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
         tierDiscount.discountAmount,
         currentProductPrice,
         tierDiscount.quantity,
-        tierDiscount.type
+        tierDiscount.type,
+        currentValue - 1
       );
 
       if (currentValue !== 1) {
@@ -193,7 +209,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
         document.querySelector("[data-quantity-selector-field]").value
       );
 
-      if (currentValue > 1) {
+      if (currentValue == 1) {
         document
           .querySelector(".tiersQuantitySelector > button[data-quantity-minus]")
           .removeAttribute("disabled");
@@ -207,12 +223,68 @@ document.addEventListener("DOMContentLoaded", async (event) => {
         tierDiscount.discountAmount,
         currentProductPrice,
         tierDiscount.quantity,
-        tierDiscount.type
+        tierDiscount.type,
+        currentValue + 1
       );
 
       document.querySelector("[data-quantity-selector-field]").value =
         currentValue + 1;
       document.querySelector("[data-quantity-selector-field]").defaultValue =
         currentValue + 1;
+    });
+
+  document
+    .querySelector(".tiersAddToCartBtn")
+    .addEventListener("click", function (e) {
+      const quantity = document.querySelector(
+        "[data-quantity-selector-field]"
+      ).value;
+      let tierDiscount = window.tiers.find((tier) => quantity <= tier.quantity);
+
+      let discountedPrice = discountedBulkPrice(
+        tierDiscount.discountAmount,
+        currentProductPrice,
+        tierDiscount.quantity,
+        tierDiscount.type,
+        parseInt(quantity),
+        quantity,
+        true
+      );
+
+      let originalPrice =
+        priceFormatter(parseInt(currentProductPrice), false, true) *
+        parseInt(quantity);
+
+      let totalValueToBeDeduct = parseFloat(
+        (originalPrice - discountedPrice).toFixed(2)
+      );
+
+      let formData = {
+        items: [
+          {
+            id: currentVariantID,
+            quantity: parseInt(quantity),
+            properties: {
+              "_tier-discount": totalValueToBeDeduct,
+              _tiers: JSON.stringify(window.tiers),
+            },
+          },
+        ],
+      };
+
+      fetch(window.Shopify.routes.root + "cart/add.js", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+        .then((response) => {
+          // return response.json();
+          location.assign("/cart");
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
     });
 });

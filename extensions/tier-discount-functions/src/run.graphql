@@ -1,0 +1,17 @@
+query RunInput {
+  cart {
+    lines {
+      id
+      quantity
+      attribute(key: "_tiers") {
+        key
+        value
+      }
+      cost {
+        totalAmount {
+          amount
+        }
+      }
+    }
+  }
+}

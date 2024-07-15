@@ -13,7 +13,26 @@ export async function run({ params, record, logger, api, connections }) {
  * @param { ReinstallShopifyShopActionContext } context
  */
 export async function onSuccess({ params, record, logger, api, connections }) {
-  // Your logic goes here
+  const shopify = connections.shopify.current;
+  if (shopify) {
+    await shopify.graphql(`
+        mutation {
+          discountAutomaticAppCreate(automaticAppDiscount: {
+            title: "TieredDiscount",
+            functionId: "e1114b75-3aef-4d56-8924-d73f5f9191fa",
+            startsAt: "2022-06-22T00:00:00"
+          }) {
+            automaticAppDiscount {
+              discountId
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+    `)
+  }
 };
 
 /** @type { ActionOptions } */
