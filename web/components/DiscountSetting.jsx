@@ -37,7 +37,15 @@ export default function DiscountSettings({
     { label: "Specific Collections", value: "collection" },
   ];
 
-  const browseBtn = useCallback(async () => {
+  const fireResourcePicker = async (
+    selectedResource,
+    resourceInput,
+    selectedProducts,
+    selectedCollections,
+    setSelectedProducts,
+    setSelectedCollections,
+    shopify
+  ) => {
     const selected = await shopify.resourcePicker({
       type: selectedResource,
       query: resourceInput,
@@ -58,7 +66,20 @@ export default function DiscountSettings({
     if (selected && selectedResource == "collection") {
       setSelectedCollections(selected);
     }
-  }, [selectedResource, selectedProducts, selectedCollections]);
+  };
+  const browseBtn = useCallback(
+    async () =>
+      await fireResourcePicker(
+        selectedResource,
+        resourceInput,
+        selectedProducts,
+        selectedCollections,
+        setSelectedProducts,
+        setSelectedCollections,
+        shopify
+      ),
+    [selectedResource, selectedProducts, selectedCollections, resourceInput]
+  );
 
   return (
     <Card roundedAbove="sm">
@@ -78,14 +99,23 @@ export default function DiscountSettings({
           onChange={handleSelectResourceChange}
           value={selectedResource}
         />
-        <InlineGrid columns={["twoThirds", "oneThird"]} gap={100}>
-          <ComboSelector
-            inputValue={resourceInput}
-            setInputValue={setResouceInputValue}
-            selectedResource={selectedResource}
-          />
-          <Button onClick={browseBtn}>Browse</Button>
-        </InlineGrid>
+        <InlineStack gap={100} alignItems="center">
+          <div style={{ flex: "1" }}>
+            <ComboSelector
+              inputValue={resourceInput}
+              setInputValue={setResouceInputValue}
+              selectedResource={selectedResource}
+              fireResourcePicker={fireResourcePicker}
+              selectedCollections={selectedCollections}
+              selectedProducts={selectedCollections}
+              setSelectedCollections={setSelectedCollections}
+              setSelectedProducts={setSelectedProducts}
+            />
+          </div>
+          <div style={{ maxWidth: "70px" }}>
+            <Button onClick={browseBtn}>Browse</Button>
+          </div>
+        </InlineStack>
 
         {selectedResource == "product" &&
           selectedProducts.map((p, index) => (

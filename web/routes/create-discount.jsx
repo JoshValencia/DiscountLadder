@@ -10,6 +10,7 @@ import {
   BlockStack,
   Layout,
   InlineStack,
+  Spinner,
 } from "@shopify/polaris";
 import { api } from "../api";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -50,6 +51,7 @@ function Tiers({ tiers, setTiers, modifyMode }) {
 }
 
 export default function () {
+  const [submitting, setSubmitStatus] = useState(false);
   let { state } = useLocation();
   let modifyMode = state && state.mode ? state.mode : "CREATE";
   let duplicateState =
@@ -220,6 +222,7 @@ export default function () {
   };
 
   const handleDraftDiscount = useCallback(async () => {
+    setSubmitStatus(true);
     await gadgetMutateDiscount(
       title,
       selectedResource,
@@ -231,6 +234,7 @@ export default function () {
       modifyMode,
       existingID
     );
+    setSubmitStatus(false);
     shopify.toast.show("Tiered Discount Saved & Drafted");
   }, [
     tiers,
@@ -244,6 +248,7 @@ export default function () {
   ]);
 
   const handlePublishDiscount = useCallback(async () => {
+    setSubmitStatus(true);
     await gadgetMutateDiscount(
       title,
       selectedResource,
@@ -255,6 +260,7 @@ export default function () {
       modifyMode,
       existingID
     );
+    setSubmitStatus(false);
     shopify.toast.show("Tiered Discount Saved & Published");
   }, [
     tiers,
@@ -268,6 +274,22 @@ export default function () {
   ]);
 
   const navigate = useNavigate();
+
+  if (submitting) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100%",
+          width: "100%",
+        }}
+      >
+        <Spinner accessibilityLabel="Spinner example" size="large" />
+      </div>
+    );
+  }
 
   return (
     <Page
@@ -303,11 +325,14 @@ export default function () {
                 variant="primary"
                 tone="critical"
                 onClick={async () => {
+                  setSubmitStatus(true);
                   if (modifyStatus == "EDIT") {
                     await api.tieredDiscounts.delete(existingID);
 
+                    setSubmitStatus(false);
                     navigate("/");
                   } else {
+                    setSubmitStatus(false);
                     navigate("/");
                   }
                 }}
@@ -358,11 +383,23 @@ export default function () {
                   Applies To
                 </Text>
                 <Text as="p" variant="bodyMd">
-                  {selectedResource == "product"
+                  {selectedProducts.length == 0 &&
+                  selectedCollections.length == 0
+                    ? "Not Set"
+                    : selectedResource == "product"
                     ? selectedProducts.length
                     : selectedCollections.length}{" "}
-                  {selectedResource}s{" "}
+                  {(selectedProducts.length !== 0 ||
+                    selectedCollections.length !== 0) &&
+                    selectedResource +
+                      `${
+                        selectedProducts.length > 1 ||
+                        selectedCollections.length > 1
+                          ? "s"
+                          : ""
+                      }`}
                   {selectedResource == "collection" &&
+                    selectedCollections.length > 1 &&
                     `(${selectedCollections.reduce(
                       (acc, col) => col.productsCount + acc,
                       0
@@ -374,7 +411,8 @@ export default function () {
                   Tiers
                 </Text>
                 <Text as="p" variant="bodyMd">
-                  {tiers.length} tiers
+                  {tiers.length} tier
+                  {tiers.length > 1 && "s"}
                 </Text>
               </BlockStack>
             </BlockStack>

@@ -75,6 +75,11 @@ export function run(input) {
             amount: String(totalValueToBeDeduct),
           },
         },
+        message: `Tiered Discount ${
+          matchingTier.type == "percent"
+            ? matchingTier.discountAmount + "%"
+            : "$" + matchingTier.discountAmount
+        } off`,
       };
     });
 

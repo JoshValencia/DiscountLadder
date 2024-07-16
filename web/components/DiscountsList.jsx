@@ -191,7 +191,7 @@ export default function DiscountsList({ discounts, refetchDiscount }) {
             { title: "Actions", alignment: "end" },
           ]}
           pagination={{
-            hasNext: true,
+            hasNext: discounts.hasNextPage,
             onNext: () => {},
           }}
           sortable={[true]}

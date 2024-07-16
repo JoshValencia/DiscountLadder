@@ -7,10 +7,24 @@ import { SearchIcon } from "@shopify/polaris-icons";
 export default function ComboSelector({
   inputValue,
   setInputValue,
+  fireResourcePicker,
   selectedResource,
+  selectedProducts,
+  selectedCollections,
+  setSelectedProducts,
+  setSelectedCollections,
 }) {
   const updateText = useCallback(async (value) => {
     setInputValue(value);
+    await fireResourcePicker(
+      selectedResource,
+      value,
+      selectedProducts,
+      selectedCollections,
+      setSelectedProducts,
+      setSelectedCollections,
+      shopify
+    );
   }, []);
 
   let label = `Search ${selectedResource}`;
