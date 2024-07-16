@@ -75,7 +75,7 @@ export function run(input) {
             amount: String(totalValueToBeDeduct),
           },
         },
-        message: `Tiered Discount ${
+        message: `${
           matchingTier.type == "percent"
             ? matchingTier.discountAmount + "%"
             : "$" + matchingTier.discountAmount
