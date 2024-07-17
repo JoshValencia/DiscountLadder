@@ -188,6 +188,9 @@ export default function () {
           collections: tieredDiscount.collections,
           products: tieredDiscount.products,
           tiers: tieredDiscount.tiers,
+          shop: {
+            _link: data.id,
+          },
         },
         {
           select: {

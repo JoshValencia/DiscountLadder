@@ -31,6 +31,11 @@ export const schema: GadgetModel = {
       parent: { model: "shopifyShop" },
       storageKey: "Y3uSWg2wX46_",
     },
+    shopifyProducts: {
+      type: "hasMany",
+      children: { model: "shopifyProduct", belongsToField: "tiers" },
+      storageKey: "8HDXz1BTkHGp",
+    },
     tiers: {
       type: "hasMany",
       children: { model: "tiers", belongsToField: "tieredDiscount" },
