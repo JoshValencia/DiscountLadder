@@ -44,21 +44,21 @@ export function run(input) {
 
   const cartItems = input.cart.lines
     // Only include cart lines with a quantity of two or more
-    .filter((line) => line.quantity >= 2 && line.attribute?.key == "_tiers")
+    .filter((line) => line.quantity >= 2)
     .map((line) => {
       let originalTotal = parseFloat(
         parseFloat(line.cost.totalAmount.amount).toFixed(2)
       );
-      let matchingTier = JSON.parse(line.attribute?.value).find(
-        (tier) => line.quantity <= tier.quantity
-      );
+      let matchingTier = JSON.parse(
+        line.merchandise.product.metafield.value
+      ).find((tier) => line.quantity <= tier.quantity);
+
+      console.log(matchingTier);
       let discountedTotal = discountApply(
         matchingTier.discountAmount,
         originalTotal,
         matchingTier.type
       );
-
-      console.log(JSON.stringify({ originalTotal, discountedTotal }));
 
       let totalValueToBeDeduct = originalTotal - discountedTotal;
       return {

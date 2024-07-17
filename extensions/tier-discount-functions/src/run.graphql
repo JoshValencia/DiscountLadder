@@ -12,6 +12,16 @@ query RunInput {
           amount
         }
       }
+      merchandise {
+        ... on ProductVariant {
+          product {
+            handle
+            metafield(key: "tiers", namespace: "discount") {
+              value
+            }
+          }
+        }
+      }
     }
   }
 }
