@@ -8,6 +8,7 @@ embedded = true
 
 [build]
 dev_store_url = "jvdevstaging.myshopify.com"
+include_config_on_deploy = true
 
 [auth]
 redirect_urls = [
