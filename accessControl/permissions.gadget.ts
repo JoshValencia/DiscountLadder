@@ -145,7 +145,9 @@ export const permissions: GadgetPermissions = {
         },
       },
       actions: {
+        getDraftOrders: true,
         scheduledShopifySync: true,
+        updateDraftOrder: true,
       },
     },
     unauthenticated: {

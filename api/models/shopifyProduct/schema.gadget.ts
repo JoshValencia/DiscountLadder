@@ -18,6 +18,7 @@ export const schema: GadgetModel = {
       "body",
       "category",
       "compareAtPriceRange",
+      "draftOrderLineItems",
       "handle",
       "images",
       "productCategory",

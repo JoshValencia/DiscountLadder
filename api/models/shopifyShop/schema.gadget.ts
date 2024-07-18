@@ -31,6 +31,8 @@ export const schema: GadgetModel = {
       "discountCodes",
       "discounts",
       "domain",
+      "draftOrderLineItems",
+      "draftOrders",
       "eligibleForCardReaderGiveaway",
       "eligibleForPayments",
       "email",

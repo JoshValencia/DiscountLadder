@@ -1,4 +1,9 @@
-import { useFindFirst, useQuery, useFindMany } from "@gadgetinc/react";
+import {
+  useFindFirst,
+  useQuery,
+  useFindMany,
+  useGlobalAction,
+} from "@gadgetinc/react";
 import { useState, useCallback } from "react";
 import { Modal } from "@shopify/app-bridge-react";
 import {
@@ -11,6 +16,8 @@ import {
   Layout,
   InlineStack,
   Spinner,
+  Select,
+  Icon,
 } from "@shopify/polaris";
 import { api } from "../api";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -22,6 +29,7 @@ import {
 import { DISCOUNT_TYPES } from "../helper/constants";
 import Tier from "../components/Tier";
 import DiscountSettings from "../components/DiscountSetting";
+import { RefreshIcon } from "@shopify/polaris-icons";
 
 function Tiers({ tiers, setTiers, modifyMode }) {
   return (
@@ -276,6 +284,64 @@ export default function () {
     existingID,
   ]);
 
+  const [draftOrderList, setDraftOrderList] = useState([]);
+
+  const handleGetDraftOrders = useCallback(async () => {
+    try {
+      const response = await api.fetch(
+        "http://discount-ladder--test.gadget.app/draftorders"
+      );
+      const draftOrders = await response.json();
+      setDraftOrderList(draftOrders);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
+  }, []);
+
+  useState(() => {
+    (async () => {
+      try {
+        const response = await api.fetch(
+          "http://discount-ladder--test.gadget.app/draftorders"
+        );
+        const draftOrders = await response.json();
+        setDraftOrderList(draftOrders);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    })();
+  }, [modifyMode]);
+  const [selectedDraftOrder, setSelectedDraftOrder] = useState("initial");
+
+  const handleDraftOrderChange = useCallback(
+    (value) => setSelectedDraftOrder(value),
+    []
+  );
+
+  const handleDraftOrderApplyDiscount = useCallback(async () => {
+    const draftOrder = draftOrderList.filter(
+      ({ node }) => node.id == selectedDraftOrder
+    );
+    setSubmitStatus(true);
+    try {
+      const response = await api.fetch(
+        "http://discount-ladder--test.gadget.app/draftorder",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            draftOrder: draftOrder[0],
+          }),
+        }
+      );
+      const result = await response.json();
+
+      console.log(result);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
+    setSubmitStatus(false);
+  }, [draftOrderList, selectedDraftOrder]);
+
   const navigate = useNavigate();
 
   if (submitting) {
@@ -293,7 +359,6 @@ export default function () {
       </div>
     );
   }
-
   return (
     <Page
       backAction={{ content: "Dashboard", onAction: () => navigate("/") }}
@@ -371,55 +436,101 @@ export default function () {
           </BlockStack>
         </Layout.Section>
         <Layout.Section variant="oneThird">
-          <Card roundedAbove="sm">
-            <BlockStack gap="400">
-              <BlockStack gap="200">
-                <Text as="h2" variant="headingSm">
-                  Summary
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  {title == "" ? "Not Set" : title}
-                </Text>
+          <BlockStack gap="300">
+            <Card roundedAbove="sm">
+              <BlockStack gap="400">
+                <BlockStack gap="200">
+                  <Text as="h2" variant="headingSm">
+                    Summary
+                  </Text>
+                  <Text as="p" variant="bodyMd">
+                    {title == "" ? "Not Set" : title}
+                  </Text>
+                </BlockStack>
+                <BlockStack gap="200">
+                  <Text as="h2" variant="headingSm">
+                    Applies To
+                  </Text>
+                  <Text as="p" variant="bodyMd">
+                    {selectedProducts.length == 0 &&
+                    selectedCollections.length == 0
+                      ? "Not Set"
+                      : selectedResource == "product"
+                      ? selectedProducts.length
+                      : selectedCollections.length}{" "}
+                    {(selectedProducts.length !== 0 ||
+                      selectedCollections.length !== 0) &&
+                      selectedResource +
+                        `${
+                          selectedProducts.length > 1 ||
+                          selectedCollections.length > 1
+                            ? "s"
+                            : ""
+                        }`}
+                    {selectedResource == "collection" &&
+                      selectedCollections.length > 1 &&
+                      `(${selectedCollections.reduce(
+                        (acc, col) => col.productsCount + acc,
+                        0
+                      )}) total products`}
+                  </Text>
+                </BlockStack>
+                <BlockStack gap="200">
+                  <Text as="h2" variant="headingSm">
+                    Tiers
+                  </Text>
+                  <Text as="p" variant="bodyMd">
+                    {tiers.length} tier
+                    {tiers.length > 1 && "s"}
+                  </Text>
+                </BlockStack>
               </BlockStack>
-              <BlockStack gap="200">
-                <Text as="h2" variant="headingSm">
-                  Applies To
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  {selectedProducts.length == 0 &&
-                  selectedCollections.length == 0
-                    ? "Not Set"
-                    : selectedResource == "product"
-                    ? selectedProducts.length
-                    : selectedCollections.length}{" "}
-                  {(selectedProducts.length !== 0 ||
-                    selectedCollections.length !== 0) &&
-                    selectedResource +
-                      `${
-                        selectedProducts.length > 1 ||
-                        selectedCollections.length > 1
-                          ? "s"
-                          : ""
-                      }`}
-                  {selectedResource == "collection" &&
-                    selectedCollections.length > 1 &&
-                    `(${selectedCollections.reduce(
-                      (acc, col) => col.productsCount + acc,
-                      0
-                    )}) total products`}
-                </Text>
-              </BlockStack>
-              <BlockStack gap="200">
-                <Text as="h2" variant="headingSm">
-                  Tiers
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  {tiers.length} tier
-                  {tiers.length > 1 && "s"}
-                </Text>
-              </BlockStack>
-            </BlockStack>
-          </Card>
+            </Card>
+            {draftOrderList.length !== 0 && modifyMode == "EDIT" && (
+              <Card roundedAbove="sm">
+                <BlockStack gap="400">
+                  <BlockStack gap="200">
+                    <>
+                      <InlineStack align="space-between">
+                        <Text as="h2" variant="headingSm">
+                          Draft Order List
+                        </Text>
+                        <Button
+                          variant="monochromePlain"
+                          onClick={handleGetDraftOrders}
+                        >
+                          <Icon source={RefreshIcon} />
+                        </Button>
+                      </InlineStack>
+                      <Select
+                        options={[
+                          {
+                            label: "Select Draft Order..",
+                            value: "initial",
+                            disabled: true,
+                          },
+                          ...draftOrderList?.map((d) => {
+                            return {
+                              label: d.node.name,
+                              value: d.node.id,
+                            };
+                          }),
+                        ]}
+                        value={selectedDraftOrder}
+                        onChange={handleDraftOrderChange}
+                      />
+                      <Button
+                        variant="primary"
+                        onClick={handleDraftOrderApplyDiscount}
+                      >
+                        Apply Discount
+                      </Button>
+                    </>
+                  </BlockStack>
+                </BlockStack>
+              </Card>
+            )}
+          </BlockStack>
         </Layout.Section>
       </Layout>
       <div style={{ height: "50px" }}></div>
