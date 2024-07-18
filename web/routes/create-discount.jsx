@@ -289,7 +289,7 @@ export default function () {
   const handleGetDraftOrders = useCallback(async () => {
     try {
       const response = await api.fetch(
-        "https://discount-ladder--development.gadget.app/draftorderss"
+        "http://discount-ladder--development.gadget.app/draftorders"
       );
       const draftOrders = await response.json();
       setDraftOrderList(draftOrders);
@@ -302,7 +302,7 @@ export default function () {
     (async () => {
       try {
         const response = await api.fetch(
-          "https://discount-ladder--development.gadget.app/draftorderss"
+          "http://discount-ladder--development.gadget.app/draftorders"
         );
         const draftOrders = await response.json();
         setDraftOrderList(draftOrders);
@@ -325,7 +325,7 @@ export default function () {
     setSubmitStatus(true);
     try {
       const response = await api.fetch(
-        "https://discount-ladder--development.gadget.app/draftorder",
+        "http://discount-ladder--development.gadget.app/draftorder",
         {
           method: "POST",
           body: JSON.stringify({
