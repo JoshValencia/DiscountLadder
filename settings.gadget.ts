@@ -28,6 +28,8 @@ export const settings: GadgetSettings = {
           "read_script_tags",
           "write_themes",
           "read_themes",
+          "write_draft_orders",
+          "read_draft_orders",
         ],
       },
     },
