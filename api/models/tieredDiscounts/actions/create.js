@@ -27,6 +27,72 @@ export async function onSuccess({ params, record, logger, api, connections }) {
   });
   if (shopify) {
     try {
+      for (let collection of record.collections) {
+        const collectionWithProductsData = await shopify.graphql(
+          `
+            query($id:ID!) {
+              collection(id:$id) {
+                id
+                products(first:250){
+                  nodes{
+                    id
+                    tags
+                  }
+                }
+              }
+            }
+          `,
+          {
+            id: collection.id,
+          }
+        );
+
+        const products = collectionWithProductsData.collection.products.nodes;
+
+        for (let product of products) {
+          const id = product.id.split("/").pop();
+          let filteredTags = product.tags.filter(
+            (tag) => !tag.startsWith("tier")
+          );
+          filteredTags.push(`tier-${record.id}`);
+
+          const responseProduct = await shopify.product.update(id, {
+            id,
+            tags: filteredTags.join(","),
+          });
+          const response = await shopify.graphql(
+            `
+            mutation MetafieldsSet($metafields: [MetafieldsSetInput!]!) {
+              metafieldsSet(metafields: $metafields) {
+                metafields {
+                  key
+                  namespace
+                  value
+                  createdAt
+                  updatedAt
+                }
+                userErrors {
+                  field
+                  message
+                  code
+                }
+              }
+            }
+            `,
+            {
+              metafields: [
+                {
+                  key: "tiers",
+                  namespace: "discount",
+                  ownerId: product.id,
+                  type: "json",
+                  value: JSON.stringify(tiers),
+                },
+              ],
+            }
+          );
+        }
+      }
       for (let product of record.products) {
         const id = product.id.split("/").pop();
         let filteredTags = product.tags.filter(

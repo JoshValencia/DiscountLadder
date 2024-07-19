@@ -52,6 +52,37 @@ export async function onSuccess({ params, record, logger, api, connections }) {
           id,
           tags: tags.filter((tag) => !tag.startsWith("tier")).join(","),
         });
+        const response = await shopify.graphql(
+          `
+          mutation MetafieldsSet($metafields: [MetafieldsSetInput!]!) {
+            metafieldsSet(metafields: $metafields) {
+              metafields {
+                key
+                namespace
+                value
+                createdAt
+                updatedAt
+              }
+              userErrors {
+                field
+                message
+                code
+              }
+            }
+          }
+          `,
+          {
+            metafields: [
+              {
+                key: "tiers",
+                namespace: "discount",
+                ownerId: responseProduct.id,
+                type: "json",
+                value: JSON.stringify([]),
+              },
+            ],
+          }
+        );
       }
     } catch (err) {
       console.error(err);
