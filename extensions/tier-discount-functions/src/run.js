@@ -11,7 +11,7 @@ import { DiscountApplicationStrategy } from "../generated/api";
  * @type {FunctionRunResult}
  */
 const EMPTY_DISCOUNT = {
-  discountApplicationStrategy: DiscountApplicationStrategy.First,
+  discountApplicationStrategy: DiscountApplicationStrategy.All,
   discounts: [],
 };
 // The configured entrypoint for the 'purchase.product-discount.run' extension target
@@ -93,6 +93,6 @@ export function run(input) {
   // and writes it to STDOUT
   return {
     discounts: cartItems,
-    discountApplicationStrategy: DiscountApplicationStrategy.First,
+    discountApplicationStrategy: DiscountApplicationStrategy.All,
   };
 }
