@@ -76,7 +76,7 @@ export async function onSuccess({ params, record, logger, api, connections }) {
               {
                 key: "tiers",
                 namespace: "discount",
-                ownerId: taggedProduct.node.id,
+                ownerId: responseProduct.id,
                 type: "json",
                 value: JSON.stringify([]),
               },
